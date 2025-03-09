@@ -13,62 +13,36 @@ let sanidade = 10;
 let esforco = 5;
 
 let imagemUrlInput; // Caixa de texto para o URL da imagem
-let imagemPreview;  // (não usado atualmente)
+let imagemPreview; // Elemento para mostrar a imagem
 let verificarImagemButton; // Botão "Verificar Imagem"
-let imagemDisplay; // Exibindo a imagem
-
-// Variável para definir o layout ("desktop" ou "mobile")
-let layout = "desktop";
+let imagemDisplay; // Exibindo a imagem ao lado direito
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
   
-  // Define layout com base na largura da janela
-  if (windowWidth < 600) {
-    layout = "mobile";
-  } else {
-    layout = "desktop";
-  }
-  
-  // Cria os campos de entrada
+  // Caixa de entrada para Nome, Idade e Classe
   criarCamposDeEntrada();
   
-  // Define as posições dos círculos dos atributos conforme o layout
-  if (layout === "desktop") {
-    let centroX = width / 2 + 250;  // conforme código original
-    let centroY = 250;
-    let raio = 150;
-    circulos = [];
-    for (let i = 0; i < atributos.length; i++) {
-      let angle = TWO_PI / 5 * i - PI / 2;
-      let x = centroX + raio * cos(angle);
-      let y = centroY + raio * sin(angle);
-      circulos.push({ x: x, y: y, r: 25 });
-    }
-  } else { // mobile layout: organiza os círculos centralizados e com um raio menor
-    let centroX = windowWidth / 2;
-    let centroY = 350;
-    let raio = 100;
-    circulos = [];
-    for (let i = 0; i < atributos.length; i++) {
-      let angle = TWO_PI / 5 * i - PI / 2;
-      let x = centroX + raio * cos(angle);
-      let y = centroY + raio * sin(angle);
-      circulos.push({ x: x, y: y, r: 20 });
-    }
+  // *** MODIFICAÇÃO: Aproximando o pentágono dos atributos ***
+  // Antes: let centroX = width / 2 + 250; let raio = 150;
+  // Agora, definindo o centro mais à esquerda e um raio menor:
+  let centroX = width / 2 + 150;
+  let centroY = 250;  // Mantemos o mesmo valor para vertical
+  let raio = 100;
+  
+  circulos = []; // Resetando posições
+  for (let i = 0; i < atributos.length; i++) {
+    let angle = TWO_PI / 5 * i - PI / 2;
+    let x = centroX + raio * cos(angle);
+    let y = centroY + raio * sin(angle);
+    circulos.push({ x: x, y: y, r: 25 });
   }
   
-  // Cria a caixa de seleção para a classe
-  if (layout === "desktop") {
-    classeSelect = createSelect();
-    classeSelect.position(50, 180);
-    classeSelect.size(250, 30);
-  } else {
-    classeSelect = createSelect();
-    classeSelect.position(20, 160);
-    classeSelect.size(windowWidth - 40, 30);
-  }
+  // Criando a caixa de seleção para a classe
+  classeSelect = createSelect();
+  classeSelect.position(50, 180); // Agora está abaixo da idade
+  classeSelect.size(250, 30);
   classeSelect.option('Nenhuma classe');
   classeSelect.option('Sábio');
   classeSelect.option('Velocista');
@@ -77,83 +51,52 @@ function setup() {
   classeSelect.option('Especialista');
   classeSelect.changed(atualizarDescricaoClasse);
   
-  // Cria a área de descrição da classe
-  if (layout === "desktop") {
-    classeDescricao = createDiv('Não aumenta nada');
-    classeDescricao.position(50, 220);
-  } else {
-    classeDescricao = createDiv('Não aumenta nada');
-    classeDescricao.position(20, 210);
-  }
+  // Criando a área para a descrição da classe
+  classeDescricao = createDiv('Não aumenta nada');
+  classeDescricao.position(50, 220); // Ajustando a posição da descrição
   classeDescricao.style('color', '#fff');
   classeDescricao.style('font-size', '12px');
-  
+
   // Botão de reset
-  if (layout === "desktop") {
-    resetButton = createButton('Reset');
-    resetButton.position(width/2 + 250 - 65, 250 + 20);
-    resetButton.size(120, 30);
-  } else {
-    resetButton = createButton('Reset');
-    resetButton.position(20, 260);
-    resetButton.size(windowWidth - 40, 30);
-  }
+  resetButton = createButton('Reset');
+  resetButton.position(centroX - 65, centroY + 20);  // Abaixo de "Atributos" e alinhado
+  resetButton.size(120, 30);
   resetButton.mousePressed(resetAtributos);
   
   // Caixa de texto para a URL da imagem
-  if (layout === "desktop") {
-    imagemUrlInput = createInput('');
-    imagemUrlInput.position(50, 490);
-    imagemUrlInput.size(250, 30);
-  } else {
-    imagemUrlInput = createInput('');
-    imagemUrlInput.position(20, 550);
-    imagemUrlInput.size(windowWidth - 40, 30);
-  }
+  imagemUrlInput = createInput(''); 
+  imagemUrlInput.position(50, 490);  // Posição logo abaixo do escudo
+  imagemUrlInput.size(250, 30);
   
   // Botão "Verificar Imagem"
-  if (layout === "desktop") {
-    verificarImagemButton = createButton('Verificar Imagem');
-    verificarImagemButton.position(50, 530);
-    verificarImagemButton.size(250, 30);
-  } else {
-    verificarImagemButton = createButton('Verificar Imagem');
-    verificarImagemButton.position(20, 590);
-    verificarImagemButton.size(windowWidth - 40, 30);
-  }
+  verificarImagemButton = createButton('Verificar Imagem');
+  verificarImagemButton.position(50, 530);
+  verificarImagemButton.size(250, 30);
   verificarImagemButton.mousePressed(exibirImagem);
   
   // Área para exibir a imagem
-  if (layout === "desktop") {
-    imagemDisplay = createImg('');
-    imagemDisplay.position(350, 320);
-    imagemDisplay.size(250, 250);
-  } else {
-    imagemDisplay = createImg('');
-    // Em mobile, coloca a imagem abaixo dos botões, centralizada
-    imagemDisplay.position((windowWidth - (windowWidth - 40)) / 2 + 20, 650);
-    imagemDisplay.size(windowWidth - 40, windowWidth - 40); // quadrado com largura quase total
-  }
+  imagemDisplay = createImg('');
+  imagemDisplay.position(350, 320); // Posição ao lado direito das informações
+  imagemDisplay.size(250, 250); // Tamanho fixo da imagem
 }
 
 function criarCamposDeEntrada() {
+  // Caixa de entrada para Nome e Idade
   let campos = ["Nome", "Idade"];
   for (let i = 0; i < campos.length; i++) {
     let input = createInput("");
-    if (layout === "desktop") {
-      input.position(50, 100 + i * 40);
-      input.size(250, 30);
-    } else {
-      input.position(20, 50 + i * 50);
-      input.size(windowWidth - 40, 40);
-    }
+    input.position(50, 100 + i * 40); // Ajustando para o lado esquerdo
+    input.size(250, 30);
     input.style("background", "#fff");
     input.style("color", "#000");
     input.attribute("placeholder", campos[i]);
+    
+    // Se for o campo de idade, permite apenas números
     if (campos[i] === "Idade") {
       input.attribute("type", "number");
       input.input(verificarIdade);
     }
+    
     inputs.push(input);
   }
 }
@@ -168,66 +111,50 @@ function verificarIdade() {
 function draw() {
   background(0);
   
-  // Desenha os círculos dos atributos e seus textos
+  // Desenhando os círculos dos atributos
   for (let i = 0; i < atributos.length; i++) {
     fill(255);
-    ellipse(circulos[i].x, circulos[i].y, layout === "desktop" ? 50 : 40, layout === "desktop" ? 50 : 40);
+    ellipse(circulos[i].x, circulos[i].y, 50, 50);
     
     fill(0);
-    textSize(layout === "desktop" ? 16 : 14);
+    textSize(16);
     textAlign(CENTER, CENTER);
     text(pontos[i], circulos[i].x, circulos[i].y);
 
     fill(255);
-    textSize(layout === "desktop" ? 12 : 10);
-    text(atributos[i], circulos[i].x, circulos[i].y + (layout === "desktop" ? 30 : 25));
+    textSize(12);
+    textAlign(CENTER, CENTER);
+    text(atributos[i], circulos[i].x, circulos[i].y + 30);
   }
   
-  // Texto "Atributos"
+  // *** MODIFICAÇÃO: Ajustando a posição do título "Atributos" ***
+  // Antes: text("Atributos", width / 2 + 250, 250);
+  // Agora: alinhado com o novo centro do pentágono.
   fill(255);
   textSize(24);
   textAlign(CENTER, CENTER);
-  if (layout === "desktop") {
-    text("Atributos", width / 2 + 250, 250);
-  } else {
-    text("Atributos", windowWidth / 2, 320);
-  }
+  text("Atributos", width / 2 + 150, 250);
   
-  // Atualiza valores de HP, Sanidade e Esforço
+  // Atualizando os valores de HP, Sanidade e Esforço
   hp = calcularHP();
   sanidade = calcularSanidade();
   esforco = calcularEsforco();
   
-  // Desenha as barras de HP, Sanidade e Esforço
-  if (layout === "desktop") {
-    desenharBarra("HP", hp, 50, 270, color(255, 0, 0), 10, 36);
-    desenharBarra("Sanidade", sanidade, 50, 320, color(0, 0, 255), 5, 24);
-    desenharBarra("Esforço", esforco, 50, 370, color(255, 255, 0), 3, 8);
-  } else {
-    // Em mobile, as barras podem ser empilhadas verticalmente
-    desenharBarra("HP", hp, 20, 400, color(255, 0, 0), 10, 36);
-    desenharBarra("Sanidade", sanidade, 20, 450, color(0, 0, 255), 5, 24);
-    desenharBarra("Esforço", esforco, 20, 500, color(255, 255, 0), 3, 8);
-  }
+  // Desenhando as barras coloridas
+  desenharBarra("HP", hp, 50, 270, color(255, 0, 0), 10, 36);
+  desenharBarra("Sanidade", sanidade, 50, 320, color(0, 0, 255), 5, 24);
+  desenharBarra("Esforço", esforco, 50, 370, color(255, 255, 0), 3, 8);
   
-  // Texto "Defesa" e escudo
-  if (layout === "desktop") {
-    fill(255);
-    textSize(14);
-    textAlign(CENTER, CENTER);
-    text("Defesa", 70, 410);
-    let defesa = calcularDefesa();
-    desenharEscudo(50, 420, defesa);
-  } else {
-    fill(255);
-    textSize(14);
-    textAlign(CENTER, CENTER);
-    text("Defesa", 20, 560);
-    let defesa = calcularDefesa();
-    desenharEscudo(20, 570, defesa);
-  }
+  // Desenhando o texto "Defesa" e o escudo
+  fill(255);
+  textSize(14);
+  textAlign(CENTER, CENTER);
+  text("Defesa", 70, 410);
+  let defesa = calcularDefesa();
+  desenharEscudo(50, 420, defesa);
   
-  // O botão Reset é um elemento HTML, portanto é mostrado automaticamente
+  // Exibindo o botão de reset (elemento HTML, mostrado automaticamente)
+  resetButton.show();
 }
 
 function desenharBarra(nome, valor, x, y, cor, min, max) {
@@ -235,6 +162,7 @@ function desenharBarra(nome, valor, x, y, cor, min, max) {
   textSize(14);
   textAlign(LEFT, CENTER);
   text(nome + ": " + valor, x, y - 10);
+  
   fill(cor);
   noStroke();
   rect(x, y, map(valor, min, max, 0, 250), 20);
@@ -242,6 +170,7 @@ function desenharBarra(nome, valor, x, y, cor, min, max) {
 
 function calcularHP() {
   let hpBase = 20;
+  
   switch (classeSelect.value()) {
     case 'Sábio': hpBase -= 2; break;
     case 'Velocista': hpBase += 5; break;
@@ -249,13 +178,16 @@ function calcularHP() {
     case 'Tagarela': hpBase += 3; break;
     case 'Especialista': hpBase -= 3; break;
   }
-  hpBase += pontos[0] * 2;
-  hpBase += pontos[1] * 1;
+  
+  hpBase += pontos[0] * 2; // Força
+  hpBase += pontos[1] * 1; // Vigor
+  
   return constrain(hpBase, 10, 36);
 }
 
 function calcularSanidade() {
   let sanidadeBase = 10;
+  
   switch (classeSelect.value()) {
     case 'Sábio': sanidadeBase += 5; break;
     case 'Velocista': sanidadeBase -= 1; break;
@@ -263,13 +195,16 @@ function calcularSanidade() {
     case 'Tagarela': sanidadeBase += 2; break;
     case 'Especialista': sanidadeBase += 3; break;
   }
-  sanidadeBase += pontos[2] * 2;
-  sanidadeBase += pontos[3] * 1;
+  
+  sanidadeBase += pontos[2] * 2; // Inteligência
+  sanidadeBase += pontos[3] * 1; // Presença
+  
   return constrain(sanidadeBase, 5, 24);
 }
 
 function calcularEsforco() {
   let esforcoBase = 5;
+  
   switch (classeSelect.value()) {
     case 'Sábio': esforcoBase += 1; break;
     case 'Velocista': esforcoBase += 1; break;
@@ -277,18 +212,22 @@ function calcularEsforco() {
     case 'Tagarela': esforcoBase += 1; break;
     case 'Especialista': esforcoBase += 2; break;
   }
-  if (pontos[4] >= 2) {
+  
+  if (pontos[4] >= 2) { // Magia
     esforcoBase += 1;
   }
+  
   return constrain(esforcoBase, 3, 8);
 }
 
 function mousePressed() {
   for (let i = 0; i < circulos.length; i++) {
     let d = dist(mouseX, mouseY, circulos[i].x, circulos[i].y);
+    
     if (d < circulos[i].r) {
       let proximoValor = (pontos[i] + 1) % 4;
       let diferenca = proximoValor - pontos[i];
+      
       if (pontosDistribuir - diferenca >= 0) {
         pontosDistribuir -= diferenca;
         pontos[i] = proximoValor;
@@ -306,9 +245,9 @@ function resetAtributos() {
 }
 
 function desenharEscudo(x, y, defesa) {
-  fill(200);
-  stroke(173, 216, 230);
-  strokeWeight(4);
+  fill(200);  // Cinza claro
+  stroke(173, 216, 230);  // Borda azul claro
+  strokeWeight(4);  // Borda mais espessa
   beginShape();
   vertex(x, y);
   vertex(x + 40, y);
@@ -316,6 +255,7 @@ function desenharEscudo(x, y, defesa) {
   vertex(x + 20, y + 50);
   vertex(x - 10, y + 20);
   endShape(CLOSE);
+  
   fill(0);
   noStroke();
   textSize(18);
@@ -325,13 +265,16 @@ function desenharEscudo(x, y, defesa) {
 
 function calcularDefesa() {
   let defesaBase = 10;
+  
   switch (classeSelect.value()) {
     case 'Fisiculturista': defesaBase += 2; break;
     case 'Velocista': defesaBase += 1; break;
     case 'Tagarela': defesaBase -= 1; break;
     case 'Sábio': defesaBase -= 2; break;
   }
+  
   defesaBase += pontos[1];
+  
   return max(defesaBase, 0);
 }
 
